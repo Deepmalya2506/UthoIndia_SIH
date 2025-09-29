@@ -1,0 +1,9 @@
+# Ignore the file with our secret keys
+.env
+
+# Ignore the folder with our large, generated media files
+/media/
+
+# Ignore Python cache files
+__pycache__/
+.ipynb_checkpoints

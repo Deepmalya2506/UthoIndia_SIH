@@ -1,148 +1,180 @@
 import streamlit as st
 import pandas as pd
-import json
+import folium
+from streamlit_folium import st_folium
+import h3
+from pathlib import Path
+from PIL import Image
+import spacy
+from core import get_media_visuals
+import requests
+from streamlit_lottie import st_lottie
 import time
-import os
 
-# --- Page Config ---
-st.set_page_config(page_title="UthoIndia - Visual Walkthrough", page_icon="🌊", layout="wide")
+# -----------------------------
+# PAGE CONFIG
+# -----------------------------
+st.set_page_config(page_title="🌍 UthoIndia", layout="wide")
+MEDIA_DIR = Path("media")
+LOCAL_VIDEO_PATH = MEDIA_DIR / "heygen_kolkata.mp4"
 
-# --- Data Files ---
-TWEET_FILE = "my_collected_tweets.json"
-MAP_FILE = "disaster_hotspot_map_interactive.html"
+# -----------------------------
+# SESSION STATE INIT
+# -----------------------------
+if "chapter" not in st.session_state:
+    st.session_state.chapter = 0
 
-# --- Custom CSS ---
-st.markdown("""
-<style>
-.stage {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 50px 0;
-}
-.icon {
-    font-size: 60px;
-    margin: 0 20px;
-    animation: fadeIn 1s ease-in-out;
-}
-.label {
-    font-size: 22px;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 10px;
-}
-.connector {
-    width: 140px;
-    height: 4px;
-    background: linear-gradient(to right, #3498db, #85c1e9);
-    border-radius: 2px;
-    margin: 0 20px;
-    animation: pulseLine 2s infinite;
-}
-.pulse {
-    margin: 20px auto;
-    width: 20px;
-    height: 20px;
-    background: #3498db;
-    border-radius: 50%;
-    box-shadow: 0 0 0 rgba(52, 152, 219, 0.7);
-    animation: pulseGlow 2s infinite;
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: scale(0.8); }
-    to { opacity: 1; transform: scale(1); }
-}
-@keyframes pulseLine {
-    0% { opacity: 0.4; }
-    50% { opacity: 1; }
-    100% { opacity: 0.4; }
-}
-@keyframes pulseGlow {
-    0% {
-        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 20px rgba(52, 152, 219, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
-    }
-}
-</style>
-""", unsafe_allow_html=True)
-
-def show_stage(icon1, icon2, label, delay=6):
-    with st.container():
-        st.markdown(f'<div class="stage"><div class="icon">{icon1}</div><div class="connector"></div><div class="icon">{icon2}</div></div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="label">{label}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="pulse"></div>', unsafe_allow_html=True)
-        time.sleep(delay)
-
-def show_not_found(message="The data you're looking for isn't available."):
-    st.markdown(f"""
-    <div style="text-align:center; padding:30px;">
-        <div style="font-size:50px; color:#ff6f61;">🔍</div>
-        <p style="font-size:20px; color:#888;">{message}</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# --- Header ---
-st.title("🌊 UthoIndia - Visual AI Pipeline")
-st.markdown("A cinematic walkthrough of the disaster detection workflow powered by social sensing and geospatial intelligence.")
-
-# --- Stage Animations with Unique Delays ---
-show_stage("📄", "📁", "Chapter 1: Voices of Twitter", delay=6)
-show_stage("📁", "🤖", "Chapter 2: Transformer distill noise into meaning", delay=9)
-show_stage("🤖", "📁✅", "Chapter 3: Authenticity pass", delay=5)
-show_stage("📁", "🌍", "Chapter 4: NER + Geocoder ", delay=8)
-show_stage("🌍", "🏢", "Chapter 5: Earth tessellates into H3 hexagons", delay=7)
-show_stage("🏢", "🗺️", "Chapter 6: Hotspots Canvass", delay=6)
-
-# --- Load Data ---
-def load_tweets():
-    try:
-        with open(TWEET_FILE, "r", encoding="utf-8") as f:
-            return pd.DataFrame(json.load(f))
-    except Exception:
+# -----------------------------
+# LOTTIE UTILS
+# -----------------------------
+def load_lottie_url(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
         return None
+    return r.json()
 
-def load_map_html():
-    try:
-        with open(MAP_FILE, "r", encoding="utf-8") as f:
-            return f.read()
-    except Exception:
-        return None
+# -----------------------------
+# CHAPTER FUNCTION
+# -----------------------------
+def cinematic_chapter(title, desc, icon, author):
+    st.empty()  # Ensure fresh container
+    container = st.container()
+    # Title fade-in
+    container.markdown(f"<h1 style='text-align:center'>{title}</h1>", unsafe_allow_html=True)
+    # Lottie animation
+    lottie_json = load_lottie_url(icon)
+    if lottie_json:
+        st_lottie(lottie_json, height=200)
+    # Description
+    container.markdown(f"<p style='font-size:18px'>{desc}</p>", unsafe_allow_html=True)
+    # Author
+    container.markdown(f"<p style='font-style:italic'>{author}</p>", unsafe_allow_html=True)
 
-# --- Node Explorer (only 3 dropdowns retained) ---
-st.subheader("🧭 Explore Available Stages")
-selected_node = st.selectbox("Choose a stage to inspect:", [
-    "Collecting Tweets",
-    "Semantic Filtering",
-    "Hotspot Map"
-])
+# -----------------------------
+# LOAD DATA
+# -----------------------------
+@st.cache_data
+def load_data():
+    return pd.read_csv("final_geocoded_reports.csv")
 
-# --- Stage Details ---
-if selected_node == "Collecting Tweets":
-    st.markdown("### 📡 Tweets Collected via Twitter API")
-    df_tweets = load_tweets()
-    if df_tweets is not None and not df_tweets.empty:
-        st.dataframe(df_tweets.head(10), use_container_width=True)
+df = load_data()
+
+# -----------------------------
+# SPACY LOCATION & CONTEXT
+# -----------------------------
+nlp = spacy.load("en_core_web_sm")
+def extract_location_and_context(row):
+    geo = row.get("tweet_geo")
+    if pd.notna(geo) and geo != "nan":
+        try:
+            import ast
+            geo_dict = ast.literal_eval(geo)
+            if "coordinates" in geo_dict:
+                location_name = f"{geo_dict['coordinates'][0]},{geo_dict['coordinates'][1]}"
+            else:
+                location_name = row.get("author_profile_location", "Unknown")
+        except Exception:
+            location_name = row.get("author_profile_location", "Unknown")
     else:
-        show_not_found("Tweet data could not be loaded or is empty.")
+        doc = nlp(str(row.get("text", "")))
+        loc_entities = [ent.text for ent in doc.ents if ent.label_ in ["GPE", "LOC"]]
+        location_name = loc_entities[0] if loc_entities else row.get("author_profile_location", "Unknown")
 
-elif selected_node == "Semantic Filtering":
-    st.markdown("### 🤖 Gemini Semantic Filtering")
-    st.markdown("✅ Example 1: `Huge number of fans flooded streets of Ranchi for MSD` → **Not a disaster** (Score: 0.18)")
-    st.markdown("✅ Example 2: `The streets of Kolkata are flooded before Puja due to the cloud burst` → **Likely disaster** (Score: 0.92)")
+    disaster_keywords = ["flood", "rain", "cloud burst", "cyclone", "storm", "landslide",
+                         "tsunami", "earthquake", "fire", "high wave", "storm surge"]
+    text = str(row.get("text", "")).lower()
+    context_terms = [kw for kw in disaster_keywords if kw in text]
+    disaster_context = ", ".join(context_terms) if context_terms else row.get("text", "General disaster")
+    return location_name, disaster_context
 
-elif selected_node == "Hotspot Map":
-    st.markdown("### 🗺️ Interactive Hotspot Map")
-    map_html = load_map_html()
-    if map_html:
-        st.components.v1.html(map_html, height=600)
-    else:
-        show_not_found("Map file could not be loaded.")
+# -----------------------------
+# MAP PREP
+# -----------------------------
+H3_RESOLUTION = 7
+df["h3_index"] = df.apply(lambda row: h3.latlng_to_cell(row["latitude"], row["longitude"], H3_RESOLUTION), axis=1)
+report_density = df["h3_index"].value_counts().reset_index()
+report_density.columns = ["h3_index", "report_count"]
+hotspot_centers = {row["h3_index"]: h3.cell_to_latlng(row["h3_index"]) for _, row in report_density.iterrows()}
 
-# --- Footer ---
-st.markdown("---")
-st.markdown("Built by **Data Dolphins** | Designed for Emergency , powered by AI 🚀")
+def create_hotspot_map(selected_h3=None):
+    center = [df["latitude"].mean(), df["longitude"].mean()]
+    zoom = 7
+    if selected_h3:
+        center = hotspot_centers[selected_h3]
+        zoom = 12
+    hotspot_map = folium.Map(location=center, zoom_start=zoom, tiles="OpenStreetMap")
+    for _, row in report_density.iterrows():
+        hex_coords = [[lon, lat] for lat, lon in h3.cell_to_boundary(row["h3_index"])]
+        folium.GeoJson(
+            {"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [hex_coords]}},
+            style_function=lambda feature, h3_idx=row["h3_index"]: {
+                "fillColor": "red" if h3_idx == selected_h3 else "orange",
+                "color": "black",
+                "weight": 2,
+                "fillOpacity": 0.6
+            },
+            tooltip=f"🔥 Reports: {row['report_count']}<br>H3 Index: {row['h3_index']}"
+        ).add_to(hotspot_map)
+    return hotspot_map
+
+# -----------------------------
+# STORY CHAPTERS SEQUENCE
+# -----------------------------
+chapters = [
+    {"title":"Chapter 01 – Data Collection", "desc":"Collecting social media posts from Twitter as initial data source.", 
+     "icon":"https://assets9.lottiefiles.com/packages/lf20_iwmd6pyr.json", "author":"Authored by: You"},
+    {"title":"Chapter 02 – Disaster Classification", "desc":"AI models classify posts as disaster-related or general content.", 
+     "icon":"https://assets9.lottiefiles.com/packages/lf20_tutvdkg0.json", "author":"Authored by: You"},
+    {"title":"Chapter 03 – Hotspot Mapping", "desc":"Reports are geocoded and aggregated into H3 hexagonal hotspots.", 
+     "icon":"https://assets9.lottiefiles.com/packages/lf20_xdfeea13.json", "author":"Authored by: You"},
+    {"title":"Chapter 04 – Media & AI Reports", "desc":"Visuals and AI-generated videos provide contextual disaster awareness.", 
+     "icon":"https://assets9.lottiefiles.com/packages/lf20_5ngs2ksb.json", "author":"Authored by: You"},
+    {"title":"Chapter 05 – Insights & Trends", "desc":"Analyze top disaster types and hotspot statistics for actionable insights.", 
+     "icon":"https://assets9.lottiefiles.com/packages/lf20_c9py7q7h.json", "author":"Authored by: You"}
+]
+
+# -----------------------------
+# RENDER CHAPTER BASED ON SESSION STATE
+# -----------------------------
+current = st.session_state.chapter
+
+if current < len(chapters)-1:
+    cinematic_chapter(**chapters[current])
+    if st.button("➡️ Next Chapter"):
+        st.session_state.chapter += 1
+        st.rerun()
+else:
+    # Final chapter: Map with visuals & AI report
+    cinematic_chapter(**chapters[-1])
+    col1, col2 = st.columns([2,1])
+    with col2:
+        selected_h3 = st.selectbox(
+            "Select a hotspot",
+            report_density["h3_index"].tolist(),
+            format_func=lambda x: f"{x} ({report_density.loc[report_density['h3_index']==x,'report_count'].iloc[0]} reports)"
+        )
+    with col1:
+        hotspot_map = create_hotspot_map(selected_h3)
+        map_data = st_folium(hotspot_map, height=600, width=800, returned_objects=["last_clicked"])
+
+    hotspot_points = df[df["h3_index"] == selected_h3]
+    nearest_point = hotspot_points.iloc[0] if not hotspot_points.empty else df.iloc[0]
+    location_name, disaster_context = extract_location_and_context(nearest_point)
+
+    tab1, tab2 = st.tabs(["🖼️ Contextual Visuals", "🎥 AI News Report"])
+    with tab1:
+        visuals = get_media_visuals(keywords=[disaster_context], location=location_name)
+        if visuals:
+            for i, img_path in enumerate(visuals):
+                with st.expander(f"Page {i+1}"):
+                    img = Image.open(img_path)
+                    st.image(img, caption=Path(img_path).name, use_container_width=True)
+        else:
+            st.warning("No visuals found for this hotspot yet.")
+    with tab2:
+        if "kolkata" in str(location_name).lower() and any(
+            kw in disaster_context.lower() for kw in ["rain", "cloud burst", "flood"]
+        ):
+            st.video(str(LOCAL_VIDEO_PATH))
+        else:
+            st.warning("🚧 AI news report not available for this hotspot.")
