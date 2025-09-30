@@ -65,7 +65,8 @@ streamlit run app.py
 # **Authors**
 
 **Data Dolphins**
-Ujaan Mukherjee | Aditya Bhowmick | Saloni SHaw | Ainee Sinha | Priyansu Dey | Deepmalya Koley
+
+Ujaan Mukherjee | Aditya Bhowmick | Saloni Shaw | Ainee Sinha | Priyansu Dey | Deepmalya Koley
 
 ![Stage: Alpha](https://img.shields.io/badge/Stage-Alpha-blue?style=for-the-badge)
 ![Next: YouTube Integration](https://img.shields.io/badge/Next-YouTube-red?logo=youtube&style=for-the-badge)
