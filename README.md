@@ -1,14 +1,3 @@
-# **WalkThrough**:
-
-* Vision
-* The Cinematic Chapters
-* Key Features
-* pip UthoIndia
-* Acknowledgement
-* Future
-
-  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 # 🎬 **Vision**
 
 In today’s world, social media is the first earthquake before the ground shakes — the fastest medium where people raise alarms, share updates, and spread awareness.
@@ -88,19 +77,4 @@ Ujaan Mukherjee | Aditya Bhowmick | Saloni SHaw | Ainee Sinha | Priyansu Dey | D
 - Collaborative Dashboards  
 - Mobile-first cinematic UI  
 
-
- __    __  .___________. __    __    ______  
-|  |  |  | |           ||  |  |  |  /  __  \ 
-|  |  |  | `---|  |----`|  |__|  | |  |  |  |
-|  |  |  |     |  |     |   __   | |  |  |  |
-|  `--'  |     |  |     |  |  |  | |  `--'  |
- \______/      |__|     |__|  |__|  \______/ 
-                                             
- __  .__   __.  _______   __       ___       
-|  | |  \ |  | |       \ |  |     /   \      
-|  | |   \|  | |  .--.  ||  |    /  ^  \     
-|  | |  . `  | |  |  |  ||  |   /  /_\  \    
-|  | |  |\   | |  '--'  ||  |  /  _____  \   
-|__| |__| \__| |_______/ |__| /__/     \__\  
-                                                                       
         🌍 Utho India — India Alerts. India Acts. India Rises. 🚀
