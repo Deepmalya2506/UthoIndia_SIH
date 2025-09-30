@@ -122,15 +122,15 @@ def create_hotspot_map(selected_h3=None):
 # -----------------------------
 chapters = [
     {"title":"Chapter 01 – Data Collection", "desc":"Collecting social media posts from Twitter as initial data source.", 
-     "icon":"https://assets9.lottiefiles.com/packages/lf20_iwmd6pyr.json", "author":"Authored by: You"},
+     "icon":"https://assets9.lottiefiles.com/packages/lf20_iwmd6pyr.json", "author":"Authored by: DataDolphins"},
     {"title":"Chapter 02 – Disaster Classification", "desc":"AI models classify posts as disaster-related or general content.", 
-     "icon":"https://assets9.lottiefiles.com/packages/lf20_tutvdkg0.json", "author":"Authored by: You"},
+     "icon":"https://assets9.lottiefiles.com/packages/lf20_tutvdkg0.json", "author":"Authored by: DataDolphins"},
     {"title":"Chapter 03 – Hotspot Mapping", "desc":"Reports are geocoded and aggregated into H3 hexagonal hotspots.", 
-     "icon":"https://assets9.lottiefiles.com/packages/lf20_xdfeea13.json", "author":"Authored by: You"},
+     "icon":"https://assets9.lottiefiles.com/packages/lf20_xdfeea13.json", "author":"Authored by: DataDolphins"},
     {"title":"Chapter 04 – Media & AI Reports", "desc":"Visuals and AI-generated videos provide contextual disaster awareness.", 
-     "icon":"https://assets9.lottiefiles.com/packages/lf20_5ngs2ksb.json", "author":"Authored by: You"},
+     "icon":"https://assets9.lottiefiles.com/packages/lf20_5ngs2ksb.json", "author":"Authored by: DataDolphins"},
     {"title":"Chapter 05 – Insights & Trends", "desc":"Analyze top disaster types and hotspot statistics for actionable insights.", 
-     "icon":"https://assets9.lottiefiles.com/packages/lf20_c9py7q7h.json", "author":"Authored by: You"}
+     "icon":"https://assets9.lottiefiles.com/packages/lf20_c9py7q7h.json", "author":"Authored by: DataDolphins"}
 ]
 
 # -----------------------------
@@ -177,4 +177,4 @@ else:
         ):
             st.video(str(LOCAL_VIDEO_PATH))
         else:
-            st.warning("🚧 AI news report not available for this hotspot.")
+            st.warning("🚧 AI news report under development for this hotspot.")
